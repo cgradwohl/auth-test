@@ -43,6 +43,10 @@ module.exports.token = async event => {
   const { tokens } = await oauth2Client.getToken(code)
   oauth2Client.setCredentials(tokens);
 
+  // get email from token
+
+  // set in db
+
   return {
     statusCode: 200,
     body: JSON.stringify(
