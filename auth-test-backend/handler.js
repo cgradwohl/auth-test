@@ -1,5 +1,7 @@
 'use strict';
-const {google} = require('googleapis');
+const { google } = require('googleapis');
+const { createUser } = require('./data')
+const { User } = require('./entities')
 
 // To ask for permissions from a user to retrieve an access token, you redirect them to a consent page. To create a consent page URL
 const oauth2Client = new google.auth.OAuth2(
@@ -43,9 +45,30 @@ module.exports.token = async event => {
   const { tokens } = await oauth2Client.getToken(code)
   oauth2Client.setCredentials(tokens);
 
-  // get email from token
+  // get user profile from geberated accessToken
+  const oauth2 = google.oauth2({
+    auth: oauth2Client,
+    version: 'v2'
+  });
 
-  // set in db
+  oauth2.userinfo.get(
+    function(err, res) {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log(res);
+      }
+  });
+
+  // create user from schema
+  const user = new User({
+    username: event.body.username,
+    name: event.body.name,
+    email: event.body.email
+  });
+
+  // set user in our DB
+  const { error } = await createUser(user);
 
   return {
     statusCode: 200,
