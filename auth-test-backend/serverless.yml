@@ -1,0 +1,32 @@
+service: oauthtest
+provider:
+  name: aws
+  runtime: nodejs12.x
+  environment:
+    CLIENT_ID: 476844079546-rchq82e7u0jkim9gmlre7u6fveb957e7.apps.googleusercontent.com
+    CLIENT_SECRET: EEu3JCYStqDSIPMUiAbE4EHu
+    REDIRECT_URL: https://ilpepknfkpklfpclcldcjhbefahcdjig.chromiumapp.org/
+functions:
+  authorize:
+    handler: handler.authorize
+    environment:
+    events:
+      - http:
+          path: /authorize
+          method: post
+  token:
+    handler: handler.token
+    environment:
+    events:
+      - http:
+          path: /token
+          method: post
+
+# resources: 
+#   Resources:
+#     MyTable:
+#       Type: AWS:DynamoDB::Table
+#       Properties:
+#         KeySchema:
+#           - AttributeName:
+#             KeyType:

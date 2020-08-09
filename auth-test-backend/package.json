@@ -1,0 +1,22 @@
+{
+  "name": "OauthTest",
+  "private": true,
+  "version": "1.0.0",
+  "description": "",
+  "main": "handler.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "serverless": "^1.78.1"
+  },
+  "dependencies": {
+    "googleapis": "^58.0.0"
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "manifest_version": 2,
+  "name": "AUTH_TEST",
+  "version": "0.1",
+  "background": {
+    "scripts": [
+      "background.js"
+    ],
+    "persistent": false
+  },
+  "browser_action": {
+    "default_icon": {
+      "48": "BlackComposeWindowIcon48.png"
+    },
+    "default_title": "AUTH_TEST"
+  },
+  "web_accessible_resources": [
+    "*.html",
+    "images/*",
+    "app.js"
+  ],
+  "permissions": [
+    "https://mail.google.com/",
+    "https://inbox.google.com/",
+    "identity",
+    "identity.email",
+    "storage",
+    "tabs",
+    "https://ozv3z23aoj.execute-api.us-east-1.amazonaws.com/dev/login"
+  ],
+  "oauth2": {
+    "client_id": "476844079546-8ehqvtlkii6sb25cvm44f65a8gmp76n5.apps.googleusercontent.com",
+    "scopes": [
+      "openid",
+      "profile",
+      "email",
+      "https://www.googleapis.com/auth/calendar.readonly",
+      "https://www.googleapis.com/auth/calendar.events.readonly",
+      "https://www.googleapis.com/auth/calendar.settings.readonly"
+    ]
+  },
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzf2U0M9/D8Q2FSF/KsAWB0atB4V+3mglZgnRDBAAryiueig1C6Qy3CcsVrOUa3qsNHLuNpzP/lC/WlAyDS+XXP3kcg2RTPuMTrxKz6sn/w5vTIsM8+pdTM0U92Is5XNqs78Di/Wi8zN502PmX6J31arKDyxBa351Lfdqste5QnHHyVXQStrynfGbtvJ3NUs+KovuDoJL4mtW3cRm4Q5MsF8O/fZvIWIEVY0BIb5kD28PX4qiscflNwuurd0b4StlZC0glRd85G67i8L7GfhEmn02YO/ELy1EwniuHgq0FlwC+NBKtUfEg/K6ws6s+25wtbF93B2TehJzRVrbB/icywIDAQAB"
+}

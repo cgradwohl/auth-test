@@ -1,0 +1,8 @@
+auth-test-client/key.pem
+
+# package directories
+auth-test-backend/node_modules
+auth-test-backend/jspm_packages
+
+# Serverless directories
+auth-test-backend/.serverless
