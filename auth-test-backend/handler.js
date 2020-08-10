@@ -1,7 +1,7 @@
 'use strict';
 const { google } = require('googleapis');
 const { createUser } = require('./data')
-const { User } = require('./entities')
+const { User } = require('./entities');
 
 // To ask for permissions from a user to retrieve an access token, you redirect them to a consent page. To create a consent page URL
 const oauth2Client = new google.auth.OAuth2(
@@ -13,15 +13,17 @@ const oauth2Client = new google.auth.OAuth2(
 module.exports.authorize = async event => {
   const { scopes } = JSON.parse(event.body);
 
-  if(!scopes) {
+  if (!scopes) {
     throw new Error(`Missing scopes! You must provide valid scopes.`)
   }
-  
+
   const url = oauth2Client.generateAuthUrl({
     access_type: 'offline', // 'online' (default) or 'offline' (gets refresh_token)
     scope: scopes,
     prompt: 'select_account'
   });
+
+  console.log('URL', url);
 
   return {
     statusCode: 200,
@@ -36,48 +38,59 @@ module.exports.authorize = async event => {
 };
 
 module.exports.token = async event => {
-  const accessCode = JSON.parse(event.body);
+  try {
+    const { queryStringParameters } = event;
+    const { code } = queryStringParameters;
 
-  if (!accessCode) {
-    throw new Error(`Missing access code! You must provide a valid access code.`);
+    if (!queryStringParameters && !code ) {
+      throw new Error('Invalid access code.');
+    }
+
+    const { tokens } = await oauth2Client.getToken(code);
+    console.log('\n:::TOKENS\n', JSON.stringify(tokens, null, 2));
+    // first time
+    const accessToken = tokens.access_token;
+    const refreshToken = tokens.refresh_token || ""; // THIS ONLY HAPPENS THE FIRST TIME ! store this in the DB
+    const idToken = tokens.id_token;
+    
+    oauth2Client.setCredentials(tokens);
+
+    // get user profile from generated accessToken
+    const peopleClient = google.people({
+      version: 'v1',
+      auth: oauth2Client
+    });
+
+    const people = await peopleClient.people.get({
+      resourceName: 'people/me',
+      personFields: 'emailAddresses',
+      auth: oauth2Client,
+    });
+
+    const userProfile = people.data.emailAddresses[0];
+
+    // create user from schema
+    const user = new User({
+      gaiaId: userProfile.metadata.source.id,
+      email: userProfile.value,
+      accessToken,
+      refreshToken,
+      idToken
+    });
+
+    // set user in our DB
+    const { error } = await createUser(user);
+    
+    const statusCode = error ? 500 : 200;
+    
+    const body = error ? JSON.stringify({ error }) : JSON.stringify({ user })
+
+    return {
+      statusCode,
+      body
+    }
+    
+  } catch (error) {
+    throw (`Server Error: ${error.message}`)
   }
-  
-  const { tokens } = await oauth2Client.getToken(code)
-  oauth2Client.setCredentials(tokens);
-
-  // get user profile from geberated accessToken
-  const oauth2 = google.oauth2({
-    auth: oauth2Client,
-    version: 'v2'
-  });
-
-  oauth2.userinfo.get(
-    function(err, res) {
-      if (err) {
-        console.log(err);
-      } else {
-        console.log(res);
-      }
-  });
-
-  // create user from schema
-  const user = new User({
-    username: event.body.username,
-    name: event.body.name,
-    email: event.body.email
-  });
-
-  // set user in our DB
-  const { error } = await createUser(user);
-
-  return {
-    statusCode: 200,
-    body: JSON.stringify(
-      {
-        message: `token creation was successful`,
-      },
-      null,
-      2
-    ),
-  };
 };

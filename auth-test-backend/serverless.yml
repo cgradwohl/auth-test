@@ -2,10 +2,26 @@ service: oauthtest
 provider:
   name: aws
   runtime: nodejs12.x
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "dynamodb:Query"
+        - "dynamodb:Scan"
+        - "dynamodb:GetItem"
+        - "dynamodb:PutItem"
+        - "dynamodb:UpdateItem"
+        - "dynamodb:DeleteItem"
+        - "dynamodb:Query"
+      Resource:
+        - Fn::GetAtt:
+          - AuthTestTable
+          - Arn
   environment:
     CLIENT_ID: 476844079546-rchq82e7u0jkim9gmlre7u6fveb957e7.apps.googleusercontent.com
     CLIENT_SECRET: EEu3JCYStqDSIPMUiAbE4EHu
-    REDIRECT_URL: https://ilpepknfkpklfpclcldcjhbefahcdjig.chromiumapp.org/
+    # REDIRECT_URL: https://ilpepknfkpklfpclcldcjhbefahcdjig.chromiumapp.org/
+    REDIRECT_URL: https://ozv3z23aoj.execute-api.us-east-1.amazonaws.com/dev/token
+    TABLE_NAME: { Ref: AuthTestTable }
 functions:
   authorize:
     handler: handler.authorize
@@ -20,13 +36,21 @@ functions:
     events:
       - http:
           path: /token
-          method: post
+          method: get
 
-# resources: 
-#   Resources:
-#     MyTable:
-#       Type: AWS:DynamoDB::Table
-#       Properties:
-#         KeySchema:
-#           - AttributeName:
-#             KeyType:
+resources: 
+  Resources:
+    AuthTestTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions: 
+          - AttributeName: "PK"
+            AttributeType: "S"
+          - AttributeName: "SK"
+            AttributeType: "S"
+        KeySchema: 
+          - AttributeName: "PK"
+            KeyType: "HASH"
+          - AttributeName: "SK"
+            KeyType: "RANGE"
+        BillingMode: "PAY_PER_REQUEST"

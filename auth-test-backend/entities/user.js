@@ -1,35 +1,27 @@
-const { PaymentPlan, paymentPlanFromString } = require('./paymentPlans')
-
 class User {
 
-    constructor({ username, name, email, createdAt = new Date(), organizations = {}, paymentPlan = new PaymentPlan({}) }) {
-        if (!username) {
-            throw new Error('User requires a username')
+    constructor({
+      gaiaId,
+      email,
+      createdAt = new Date(),
+      accessToken,
+      refreshToken
+    }) {
+        if (!gaiaId) {
+            throw new Error('User requires a gaiaId.')
         }
-        this.username = username
-        this.name = name
-        this.email = email
-        this.createdAt = createdAt
-        this.organizations = organizations
-        this.paymentPlan = paymentPlan
+        this.gaiaId = gaiaId;
+        this.email = email;
+
+        this.createdAt = createdAt;
+        this.accessToken = accessToken;
+        this.refreshToken = refreshToken;
     }
 
     key() {
         return {
-            'PK': { 'S': `ACCOUNT#${this.username.toLowerCase()}` },
-            'SK': { 'S': `ACCOUNT#${this.username.toLowerCase()}` }
-        }
-    }
-
-    gsi3pk() {
-        return { 'S': `ACCOUNT#${this.username.toLowerCase()}` }
-
-    }
-
-    gsi3() {
-        return {
-            'GSI3PK': this.gsi3pk(),
-            'GSI3SK': { 'S': `ACCOUNT#${this.username.toLowerCase()}` }
+            'PK': { 'S': `USER#${this.gaiaId}` },
+            'SK': { 'S': `USER#${this.email.toLowerCase()}` }
         }
     }
 
@@ -37,34 +29,15 @@ class User {
     toItem() {
         return {
             ...this.key(),
-            ...this.gsi3(),
             'Type': { 'S': 'User' },
-            'Username': { 'S': this.username },
-            'Name': { 'S': this.name },
+            'UserId': { 'S': this.gaiaId },
             'Email': { 'S': this.email },
             'CreatedAt': { 'S': this.createdAt.toISOString() },
-            'Organizations': { 'M': this.formatOrganizations() },
-            'PaymentPlan': { 'S': this.paymentPlan.toString() }
+            'AccessToken': { 'S': this.accessToken },
+            'RefreshToken': { 'S': this.refreshToken },
         }
     }
-
-    formatOrganizations() {
-        const organizations = {}
-        for (let [name, role] of Object.entries(this.organizations)) {
-            organizations[name] = { 'S': role }
-        }
-        return organizations
-    }
 }
-
-const parseOrganizations = organizations => {
-    const parsed = {}
-    for (let [name, role] of Object.entries(organizations)) {
-        parsed[name] = role.S
-    }
-    return parsed
-}
-
 
 const userFromItem = (item) => {
     // It's possible we could retrieve an Organization by accident due to similar key structure.
@@ -72,14 +45,14 @@ const userFromItem = (item) => {
     if (item.Type.S !== 'User') {
         throw new Error('Not a user.')
     }
+
     return new User({
-        username: item.Username.S,
-        name: item.Name.S,
+        userId: item.UserId.S,
         email: item.Email.S,
         createdAt: new Date(item.CreatedAt.S),
-        organizations: parseOrganizations(item.Organizations.M),
-        paymentPlan: item.PaymentPlan ? paymentPlanFromString(item.PaymentPlan.S) : {}
-    })
+        accessToken: item.AccessToken.S, 
+        refreshToken: itme.RefreshToken.S 
+    });
 }
 
 module.exports = {

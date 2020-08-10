@@ -1,7 +1,7 @@
-const { User, userFromItem } = require('./users')
+const { User, userFromItem } = require('./user');
 
 
 module.exports = {
     User,
     userFromItem,
-}
+};
