@@ -11,7 +11,14 @@ async function getAuthUrl(scopes) {
             }
         );
 
+        console.log('res', response);
+
+        chrome.identity.getProfileUserInfo({ accountStatus: "SYNC" }, (userInfo) => {
+            console.log('\n:::USERINFO\n', userInfo);
+        });
+
         const data = await response.json();
+        console.log('data'. data);
 
         return data.url;
     } catch (error) {
@@ -76,3 +83,10 @@ console.log('scopes', scopes);
 authenticate(scopes)
     .then(result => console.log('authenication result:', result))
     .catch(error => console.error(error));
+
+// chrome.browserAction.onClicked.addListener(function (clickData) {
+//     console.log('yo');
+//     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+//         chrome.tabs.sendMessage(tabs[0].id, {type: "openModal"});
+//     });
+// });
